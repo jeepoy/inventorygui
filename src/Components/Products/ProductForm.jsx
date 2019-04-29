@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Container, Row, Col, Table, Form, ButtonGroup, Button, Tabs, Tab, Alert } from 'react-bootstrap';
+import { Container, Row, Col, Form, Button, Alert } from 'react-bootstrap';
 import axios from 'axios';
 import { properties } from '../properties';
 
@@ -34,11 +34,11 @@ class ProductForm extends Component {
             const product = res.data;
             this.setState({ 
                 proId : product.id,
-                proPartNo : product.partNumber,
+                proPartNo : product.productNumber,
                 proName : product.productName,
                 proDesc : product.productDesc,                
                 categoryId : product.categoryId,
-                minimumRequired : product.minimumRequired,
+                minimumRequired : product.minInventory,
                 beginning : product.startingInventory
                 });
         }).catch(function (error) {
@@ -46,8 +46,6 @@ class ProductForm extends Component {
         });
 
     }
-
-
 
     handleChange = (event) => {
         this.setState({successMessage: "", errorMessage: ""});
@@ -82,20 +80,6 @@ class ProductForm extends Component {
             this.setState({ formErr: errList });
         }
     }
-    
-    handleDelete = (event) => {
-        const delState = window.confirm("Do you really want to delete this product?"); 
-        if(delState){
-            axios.get( this.state.rootUrl + '/product/delete/'+event.target.id).then(function (response) {
-                alert('Product was successfully deleted');
-            }).catch(function (error) {
-                alert(error);
-            });
-        }
-        event.preventDefault();
-        this.componentDidMount();
-    }
-    
 
     resetForm = () => {
         this.setState({
@@ -121,7 +105,7 @@ class ProductForm extends Component {
         .then(response => response.json())
         .then(data => {
             this.resetForm();
-            this.setState({successMessage : "Successfully added Product.", errorMessage: ""});
+            this.setState({successMessage : "Successfully Added Product.", errorMessage: ""});
         })
         .catch(error => {
             this.setState({successMessage : "", errorMessage: error.message});            
@@ -215,11 +199,9 @@ class ProductForm extends Component {
                                 <Form.Label>Starting Inventory</Form.Label>
                                 <Form.Control type="number" name="beginning" title="Starting Inventory" value={this.state.beginning} onChange={this.handleChange} required />
                             </Form.Group>
-                            <div className="d-flex justify-content-end">
-                                <ButtonGroup size="md">                                
-                                    <Button variant="success" hidden={this.props.action === "add" ? false : true} onClick={() => this.addProduct()} >Save</Button>
-                                    <Button variant="primary" hidden={this.props.action === "edit" ? false : true} onClick={() => this.editProduct()} >Save</Button>
-                                </ButtonGroup>            
+                            <div className="d-flex justify-content-end">                             
+                                <Button variant="success" hidden={this.props.action === "add" ? false : true} onClick={() => this.addProduct()} >Save</Button>
+                                <Button variant="primary" hidden={this.props.action === "edit" ? false : true} onClick={() => this.editProduct()} >Save</Button>        
                             </div>
 
                         </Col>
@@ -238,7 +220,7 @@ class ProductForm extends Component {
                             </Alert>
                         </Col>
                     </Row>
-
+                    <br/>
                 </Container>         
 
             </div>

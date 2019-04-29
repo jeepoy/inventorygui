@@ -5,16 +5,16 @@ import ReactTable from 'react-table';
 import 'react-table/react-table.css';
 import * as moment from 'moment';
 
-class CategoryGrid extends Component {
+class SupplierGrid extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            categories: [],
+            suppliers: [],
             errorMessage: "",
             infoMessage: "",
             loading: true,
             showDeleteModal: false,
-            categoryToDelete: "",
+            supplierToDelete: "",
             rootUrl: properties.rootUrl,
         };
         this.loadGridData();  
@@ -24,48 +24,36 @@ class CategoryGrid extends Component {
         
         this.setState({errorMessage: "", loading: true});
 
-        fetch(this.state.rootUrl + '/category/all/')        
+        fetch(this.state.rootUrl + '/supplier/all/')        
         .then(response => response.json())
-        .then(data => this.setState({categories: data,errorMessage: "", loading: false, infoMessage: this.loadMessage()}))
+        .then(data => this.setState({suppliers: data,errorMessage: "", loading: false, infoMessage: this.loadMessage()}))
         .catch(error => this.setState({errorMessage : error.message, loading: false, infoMessage: ""}))
-
 
         console.log("grid loaded.")
 
     }
 
     loadMessage= () => {
-        /*var date = new Date();
-        var hours = date.getHours();
-        var days = date.getDay(); 
-        var minutes = date.getMinutes();
-        var seconds = date.getSeconds();
-        var ampm = hours >= 12 ? 'pm' : 'am';
-        hours = hours % 12;
-        hours = hours ? hours : 12; // the hour '0' should be '12'
-        minutes = minutes < 10 ? '0'+minutes : minutes;
-        seconds = seconds < 10 ? '0'+seconds : seconds;*/
-
         return  'Successfully refreshed data at ' + moment().format('LTS'); 
     }
 
 
     handleEdit = (id) => {
-        this.props.setTabKey("categoryForm");
-        this.props.setCategoryId(id);
+        this.props.setTabKey("supplierForm");
+        this.props.setSupplierId(id);
         this.props.setAction("edit");
 
         console.log(id);
     }
 
-    handleDelete = (category) => {
+    handleDelete = (supplier) => {
         this.setState({showDeleteModal: true})
-        this.setState({categoryToDelete: category})
+        this.setState({supplierToDelete: supplier})
     }
 
-    deleteCategory = (category) => {
+    deleteSupplier = (supplier) => {
 
-        fetch(this.state.rootUrl + '/category/delete/'+ category.id) 
+        fetch(this.state.rootUrl + '/supplier/delete/'+ supplier.id) 
        .catch(error => this.setState({errorMessage : error.message}))
        
        this.loadGridData();
@@ -73,9 +61,9 @@ class CategoryGrid extends Component {
     }
 
     render() {
-        const proCatCol = [
+        const suppliersCol = [
             { Header: 'ID', id: "rowid", accessor: 'id' },
-            { Header: 'Name', id: "cat", accessor: 'categoryName' },
+            { Header: 'Name', id: "supplier", accessor: 'supplierName' },
             { Header: 'Action', id: 'action',
                 accessor: d => (
                     <div>
@@ -96,8 +84,8 @@ class CategoryGrid extends Component {
 
                 <br/>
                 <ReactTable 
-                    data={this.state.categories} 
-                    columns={proCatCol} 
+                    data={this.state.suppliers} 
+                    columns={suppliersCol} 
                     defaultPageSize={5}
                     className="-striped -highlight" />
                 
@@ -105,10 +93,10 @@ class CategoryGrid extends Component {
                     <Modal.Header closeButton>
                         <Modal.Title>Delete Category</Modal.Title>
                     </Modal.Header>
-                    <Modal.Body>{"You are about to delete Category: " + this.state.categoryToDelete.categoryName}</Modal.Body>
+                    <Modal.Body>{"You are about to delete Category: " + this.state.supplierToDelete.supplierName}</Modal.Body>
                     <Modal.Footer>
                         <Button variant="secondary" onClick={() => this.setState({showDeleteModal: false})}>Cancel</Button>
-                        <Button variant="primary" onClick={() => this.deleteCategory(this.state.categoryToDelete)}>Delete</Button>
+                        <Button variant="primary" onClick={() => this.deleteSupplier(this.state.supplierToDelete)}>Delete</Button>
                     </Modal.Footer>
                 </Modal>
 
@@ -121,5 +109,5 @@ class CategoryGrid extends Component {
     }
 }
 
-export default CategoryGrid;
+export default SupplierGrid;
 

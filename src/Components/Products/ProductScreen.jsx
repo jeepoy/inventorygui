@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
-import { Container, Row, Col, Table, Form, ButtonGroup, Button, Tabs, Tab, Alert } from 'react-bootstrap';
-import axios from 'axios';
+import { Container, Tabs, Tab } from 'react-bootstrap';
 import ProductGrid from "./ProductGrid";
 import ProductForm from './ProductForm';
 

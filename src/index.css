@@ -12,3 +12,26 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
     monospace;
 }
+
+.ReactTable .-pagination{
+  padding: 15px !important;
+  box-shadow: none !important;
+  border-top: none !important;
+}
+
+.ReactTable .-pagination .-center{
+  -webkit-flex: 8 !important;
+  flex: 8 !important;
+}
+
+.pagination-bottom {
+  display: flex;
+  justify-content: flex-end;
+  padding: 15px 0px 0px 0px !important;
+}
+
+.ReactTable .-pagination .-btn{
+  height: 37px !important;
+  background-color: #007bff !important; 
+  color: #fff !important;
+}

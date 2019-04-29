@@ -1,6 +1,10 @@
 import React, { Component } from 'react';
-import { Spinner, Modal, Container, Row, Col, Table, Form, ButtonGroup, Button, Tabs, Tab, Alert, ButtonToolbar, InputGroup } from 'react-bootstrap';
+import { Spinner, Modal, Button,  ButtonToolbar, Row, Col ,Form } from 'react-bootstrap';
 import { properties } from './../properties';
+import ReactTable from 'react-table';
+import 'react-table/react-table.css';
+import axios from 'axios';
+import * as moment from 'moment';
 
 
 class ProductGrid extends Component {
@@ -8,12 +12,14 @@ class ProductGrid extends Component {
         super(props);
         this.state = {
             products: [],
+            category: [],
             errorMessage: "",
             infoMessage: "",
             loading: true,            
             showDeleteModal: false,
             productToDelete: "",
-            rootUrl: properties.rootUrl
+            rootUrl: properties.rootUrl,
+            filtered: [],
         };
         this.loadGridData();  
     }
@@ -26,14 +32,24 @@ class ProductGrid extends Component {
         .then(response => response.json())
         .then(data => this.setState({products: data,errorMessage: "", loading: false, infoMessage: this.loadMessage()}))
         .catch(error => this.setState({errorMessage : error.message, loading: false, infoMessage: ""}))
-        
+
+        this.populateCategoryListBox();
         console.log("grid loaded.")        
         console.log(this.state.loading);
 
     }
 
+    populateCategoryListBox = () => {
+        axios.get(this.state.rootUrl + '/category/all/').then(res => {
+            const category = res.data;
+            this.setState({ category });
+        }).catch(function (error) {
+            alert(error);
+        });
+    }
+
     loadMessage= () => {
-        var date = new Date();
+        /*var date = new Date();
         var hours = date.getHours();
         var days = date.getDay(); 
         var minutes = date.getMinutes();
@@ -42,9 +58,9 @@ class ProductGrid extends Component {
         hours = hours % 12;
         hours = hours ? hours : 12; // the hour '0' should be '12'
         minutes = minutes < 10 ? '0'+minutes : minutes;
-        seconds = seconds < 10 ? '0'+seconds : seconds;
+        seconds = seconds < 10 ? '0'+seconds : seconds;*/
 
-        return  'Successfully refreshed data at ' + hours + ':' + minutes + ':' + seconds + ' ' + ampm;        
+        return  'Successfully refreshed data at ' + moment().format('LTS'); 
     }
 
 
@@ -68,60 +84,82 @@ class ProductGrid extends Component {
        this.setState({showDeleteModal: false})
     }
 
+    categoryFilter = (cat) => {
+        this.setState({ filtered: [{ id: 'cat', value: cat }] })
+    }
 
     render() {
+        const proColumns = [
+            { Header: 'ID', id: "rowid", accessor: 'id' },
+            { Header: 'Name', id: "proname", accessor: 'productName' },
+            { Header: 'Part #', id:"prono", accessor: 'productNumber' },
+            {
+                Header: "Category",
+                accessor: "productLabel",
+                id: "cat",
+                filterMethod: (filter, row) => {
+                  if (filter.value === "all") {
+                    return true;
+                  }
+                 if (filter.value === row[filter.id]) {
+                    return row[filter.id];
+                 }
+                },
+            },
+            { Header: 'Min Required', id:"minInvtr", accessor: 'minInventory' },
+            { Header: 'Starting', id:"startInvtr", accessor: 'startingInventory' },
+            { Header: 'Purchased', id:"invtrRcvd", accessor: 'inventoryReceived' },
+            { Header: 'Sold', id:"invtrSold", accessor: 'inventorySold' },
+            { Header: 'OnHand', id:"invtrOnH", accessor: 'inventoryOnHand' },
+            { Header: 'Action', id: 'action',
+                accessor: d => (
+                    <div>
+                        <Button variant="primary" size="sm" onClick={() => this.handleEdit(d.id)} ><i id={d.id} className="fas fa-pen"></i></Button> 
+                        <Button variant="danger" size="sm" onClick={() => this.handleDelete(d)} ><i id={d.id} className="far fa-trash-alt"></i></Button> 
+                    </div>
+                )
+            }
+        ];
+
         return (
             <div>                
                 <ButtonToolbar className="justify-content-between" aria-label="Toolbar with Button groups">                    
                     <Spinner animation="border" hidden={!this.state.loading} />
-                    <h7 style={{color:"red"}} hidden={!this.state.errorMessage}>{this.state.errorMessage}</h7>                    
-                    <h7 style={{color:"green"}}>{this.state.infoMessage}</h7>                    
+                    <h6 style={{color:"red"}} hidden={!this.state.errorMessage}>{this.state.errorMessage}</h6>                    
+                    <h6 style={{color:"green"}}>{this.state.infoMessage}</h6>                    
                     <Button size="sm" variant="success"  onClick={() => this.loadGridData()} >Refresh</Button>       
                 </ButtonToolbar>
                 <br/>
-                <Table striped bordered hover responsive size="sm" >
-                    <thead>
-                        <tr>
-                            <th>id</th>
-                            <th>Name</th>
-                            <th>Part #</th>
-                            <th>Category</th>
-                            <th>Min Required</th>
-                            <th>Starting</th>
-                            <th>Purchased</th>
-                            <th>Sold</th>
-                            <th>OnHand</th>                        
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        { 
-                            this.state.products.map( (product, i) =>
-                                <tr key={i}>
-                                    <td>{product.id}</td>
-                                    <td>{product.productName}</td>
-                                    <td>{product.partNumber}</td>
-                                    <td>{product.productLabel}</td>
-                                    <td>{product.minimumRequired}</td>
-                                    <td>{product.startingInventory}</td>
-                                    <td>{product.inventoryReceived}</td>
-                                    <td>{product.inventorySold}</td>
-                                    <td>{product.inventoryOnHand}</td>                                
-                                    <td>
-                                        <Button variant="primary" size="sm" onClick={() => this.handleEdit(product.id)} ><i id={product.id} className="fas fa-pen"></i></Button> 
-                                        <Button variant="danger" size="sm" onClick={() => this.handleDelete(product)} ><i id={product.id} className="far fa-trash-alt"></i></Button>
-                                    </td>
-                                </tr>
-                            ) 
-                        }
-                    </tbody>
-                </Table>
                 
-                <Modal show={this.state.showDeleteModal} onHide={this.handleClose}>
+                <Row className="justify-content-end">
+                    <Col sm={2} >
+                        <Form.Control as="select" title="Category"
+                        onChange={event => this.categoryFilter(event.target.value)}
+                        style={{ width: "100%" }}
+                        >
+                            <option value="all">Choose Category</option>
+                            {
+                                this.state.category.map( (cat, i) =>
+                                    <option key={i} value={cat.categoryName}>{cat.categoryName}</option>
+                                ) 
+                            }
+                        </Form.Control>
+                    </Col>
+                </Row>
+                
+                <br/>
+                <ReactTable 
+                    data={this.state.products} 
+                    columns={proColumns} 
+                    filtered={this.state.filtered}
+                    defaultPageSize={5}
+                    className="-striped -highlight" />
+                
+                <Modal show={this.state.showDeleteModal} onHide={this.handleClose} className="-striped-highlight">
                     <Modal.Header closeButton>
                         <Modal.Title>Delete Product</Modal.Title>
                     </Modal.Header>
-                    <Modal.Body>{"You are about to delete Product with Part Number: " + this.state.productToDelete.partNumber}</Modal.Body>
+                    <Modal.Body>{"You are about to delete Product with Part Number: " + this.state.productToDelete.productNumber}</Modal.Body>
                     <Modal.Footer>
                         <Button variant="secondary" onClick={() => this.setState({showDeleteModal: false})}>Cancel</Button>
                         <Button variant="primary" onClick={() => this.deleteProduct(this.state.productToDelete)}>Delete</Button>
